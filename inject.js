@@ -1,5 +1,6 @@
 var p = document.getElementsByTagName("video")[0];
 var keyCode = 16;
+var fastKeyCode = 18;
 var infoTimeout;
 var infoBox;
 var originalTime;
@@ -10,9 +11,10 @@ function main() {
 	}
 	
 	var keyHeld = false;
+	var fastMod = 1;
 
-	p.onwheel = function(event) {
-		event.preventDefault();
+	document.addEventListener("wheel", function(event) {
+		//event.preventDefault();
 		if (event.deltaY < 0) {
 			mod = 1;
 		} else {
@@ -22,25 +24,31 @@ function main() {
 			if (originalTime == undefined) {
 				originalTime = p.currentTime;
 			}
-			seek(mod);
+			seek(mod * fastMod);
 		}
-	}
+	});
 	
 	document.addEventListener("keydown", (e) => {
-		if(e.keyCode == keyCode) {
+		if (e.keyCode == keyCode) {
 			keyHeld = true;
+		}
+		if (e.keyCode == fastKeyCode) {
+			fastMod = 3;
 		}
 	});
 	
 	document.addEventListener("keyup", (e) => {
-		if(e.keyCode == keyCode) {
+		if (e.keyCode == keyCode) {
 			keyHeld = false;
+		}
+		if (e.keyCode == fastKeyCode) {
+			fastMod = 1;
 		}
 	});
 
 }
 
-main();
+main()
 
 function seek(time) {
 	var newtime = p.currentTime + time;
@@ -64,25 +72,27 @@ function toTimeString(secs, op) {
 			pre = "+";
 		}
 	}
-	return pre + mins + ":" + Math.abs(secs) % 60;
+	var secsString = Math.abs(secs) % 60;
+	secsString = secsString >= 10 ? secsString : "0" + secsString;
+	return pre + mins + ":" + secsString;
 }
 
 function infoText(info) {
 	clearTimeout(infoTimeout);
-	if(infoBox) {
+	if (infoBox) {
 		infoBox.remove();
 	}
 	infoBox = document.createElement("div");
 	infoBox.innerHTML = info;
 	infoBox.style.position = "absolute";
-	var rect = p.getBoundingClientRect();
+	//var rect = p.getBoundingClientRect();
 	infoBox.style.fontSize = "20px";
-	infoBox.style.right = rect.right + "px";
-	infoBox.style.top = rect.top + "px";
+	infoBox.style.right = "0px";
+	infoBox.style.top = "0px";
 	infoBox.style["-webkit-text-stroke"] = "1px rgba(255,255,255,0.6)";
 	p.parentNode.appendChild(infoBox);
 	infoTimeout = setTimeout(() => {
-		infoBox.remove();
-		originalTime = undefined;
+			infoBox.remove();
+			originalTime = undefined;
 		}, 1000);
 }
